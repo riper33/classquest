@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClassQuest: Quiz Arena & Buff Battle</title>
+  <meta name="description" content="Aplikasi mini game belajar interaktif ala Quizizz dengan sistem custom soal untuk guru/admin, papan nilai tertinggi kelas, dan sistem buff kekuatan yang dikembangkan.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand-container" data-nav-target="lobby">
+      <span class="brand-icon">⚡</span>
+      <div>
+        <h1 class="brand-title">ClassQuest</h1>
+      </div>
+      <span class="brand-tag">Quiz & Buffs</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="app-nav">
+      <button class="nav-tab-btn nav-active" data-nav-target="lobby">
+        <span>🎮</span> <span class="nav-label">Arena Main</span>
+      </button>
+      <button class="nav-tab-btn" data-nav-target="multiplayer">
+        <span>🌐</span> <span class="nav-label">Main Bersama</span>
+      </button>
+      <button class="nav-tab-btn" data-nav-target="shop">
+        <span>🛍️</span> <span class="nav-label">Toko Avatar</span>
+      </button>
+      <button class="nav-tab-btn" data-nav-target="leaderboard">
+        <span>🏆</span> <span class="nav-label">Papan Nilai</span>
+      </button>
+      <button class="nav-tab-btn" data-nav-target="admin">
+        <span>👨‍🏫</span> <span class="nav-label">Studio Guru</span>
+      </button>
+      <button class="nav-tab-btn" data-nav-target="buffs">
+        <span>✨</span> <span class="nav-label">Kekuatan Buff</span>
+      </button>
+    </nav>
+
+    <!-- Header Tools (Points Counter & Sound Toggle) -->
+    <div class="header-tools">
+      <div class="header-points-badge" data-nav-target="shop" title="Saldo Poin / EXP untuk belanja aksesoris avatar">
+        <span class="pts-icon">💎</span> <span class="user-points-val">750</span> <span class="pts-text">Pts</span>
+      </div>
+      <button id="btn-sound-toggle" class="btn-header-tool" title="Toggle Efek Suara">
+        🔊 <span class="nav-label">Suara: Aktif</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- ==========================================
+         VIEW 1: LOBBY VIEW (Student Entry)
+         ========================================== -->
+    <section id="lobby-view" class="view-section">
+      <div class="lobby-hero">
+        <span class="hero-pill">✨ Game Belajar Interaktif Kelas</span>
+        <h2 class="hero-title">Taklukkan Kuis, Rebut <span class="gradient-text">Buff Kekuatan</span> & Juara Kelas!</h2>
+        <p class="hero-subtitle">Rasakan sensasi belajar seru ala Quizizz dengan sistem buff yang dikembangkan. Pilih karaktermu, gunakan kekuatan misteri, dan raih skor tertinggi di kelas.</p>
+      </div>
+
+      <div class="lobby-grid-layout">
+        <!-- Setup Profile & Quiz Card -->
+        <div class="lobby-panel glass-panel">
+          <h3 class="panel-heading">🚀 Persiapan Masuk Arena</h3>
+          <p class="panel-sub">Lengkapi identitasmu dan pilih kuis yang ingin ditaklukkan.</p>
+
+          <div class="form-group">
+            <label for="lobby-student-name">Nama Siswa / Peserta:</label>
+            <input type="text" id="lobby-student-name" class="input-styled" placeholder="Contoh: Budi Santoso atau Tim Phoenix" maxlength="28" autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <label style="margin:0;">Pakaian & Aksesoris Saat Ini:</label>
+              <button type="button" class="btn-text-link" data-nav-target="shop">🛍️ Toko Aksesoris ➔</button>
+            </div>
+            <div id="lobby-avatar-preview-badge" style="margin-bottom: 0.85rem;"></div>
+            <label style="margin-bottom: 0.4rem; display:block;">Pilih Karakter Dasar & Passive Skill:</label>
+            <div id="avatar-selection-grid" class="avatar-selection-grid">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lobby-quiz-select">Pilih Kuis Kelas:</label>
+            <select id="lobby-quiz-select" class="input-styled">
+              <!-- Rendered via JS -->
+            </select>
+          </div>
+
+          <button id="btn-start-lobby-game" class="btn-primary-action">
+            <span>🔥</span> Masuk Arena & Mulai Kuis!
+          </button>
+        </div>
+
+        <!-- Highlight Buff & Features -->
+        <div class="lobby-panel glass-panel">
+          <h3 class="panel-heading">⚡ Fitur Kekuatan Buff Baru</h3>
+          <p class="panel-sub">Di setiap permainan, raih buff khusus untuk membantumu memecahkan soal sulit:</p>
+
+          <div class="feature-points-list">
+            <div class="feature-point-item">
+              <span class="fp-icon">❄️</span>
+              <div class="fp-content">
+                <h4>Chronos Freeze (Beku Waktu)</h4>
+                <p>Membekukan countdown timer selama 15 detik untuk berpikir santai tanpa kehilangan bonus kecepatan!</p>
+              </div>
+            </div>
+
+            <div class="feature-point-item">
+              <span class="fp-icon">🛡️</span>
+              <div class="fp-content">
+                <h4>Aegis Shield (Perisai Kebal)</h4>
+                <p>Salah menjawab? Perisai menahan penalti sehingga streak combo dan nyawa kamu tetap aman!</p>
+              </div>
+            </div>
+
+            <div class="feature-point-item">
+              <span class="fp-icon">🎯</span>
+              <div class="fp-content">
+                <h4>50:50 Sonar & 🔮 Oracle Guru</h4>
+                <p>Hilangkan 2 opsi salah seketika atau buka kisi-kisi rahasia yang ditulis oleh guru pembuat soal.</p>
+              </div>
+            </div>
+
+            <div class="feature-point-item">
+              <span class="fp-icon">🎁</span>
+              <div class="fp-content">
+                <h4>Mystery Buff Roulette Drop</h4>
+                <p>Cetak combo streak berturut-turut untuk membuka kotak hadiah misteri buff gratis di tengah ronde!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         VIEW 2: ACTIVE GAME PLAY SCREEN
+         ========================================== -->
+    <section id="game-screen" class="view-section hidden">
+      <div class="game-screen-wrapper">
+        
+        <!-- Game HUD Bar -->
+        <div class="game-hud-bar glass-panel">
+          <div class="hud-stat">
+            <span class="hud-icon">🏆</span>
+            <div class="hud-meta">
+              <span class="hud-label">Skor Kamu</span>
+              <span id="hud-score" class="hud-val">0</span>
+            </div>
+          </div>
+
+          <div class="hud-stat">
+            <span class="hud-icon">🔥</span>
+            <div class="hud-meta">
+              <span class="hud-label">Combo Streak</span>
+              <span id="hud-streak" class="hud-val">0x</span>
+            </div>
+          </div>
+
+          <div class="hud-stat">
+            <span class="hud-icon">🪙</span>
+            <div class="hud-meta">
+              <span class="hud-label">Koin Belajar</span>
+              <span id="hud-coins" class="hud-val">150</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timer Bar -->
+        <div class="timer-container">
+          <div class="timer-track">
+            <div id="timer-bar-fill" class="timer-bar-fill"></div>
+          </div>
+          <div class="timer-info-row">
+            <span id="timer-text">20s</span>
+            <span id="q-progress-bar-label">Progress Kuis</span>
+          </div>
+        </div>
+
+        <!-- Question Card -->
+        <div id="question-card" class="question-card glass-panel">
+          <div class="q-header-meta">
+            <span id="q-counter" class="q-counter-pill">Soal 1 / 5</span>
+            <div class="q-progress-indicator">
+              <div id="q-progress-bar" style="height: 4px; background: var(--primary); border-radius: 2px;"></div>
+            </div>
+          </div>
+
+          <h3 id="q-text" class="q-main-text">Memuat pertanyaan kuis...</h3>
+
+          <!-- Oracle Hint Box (Revealed by buff) -->
+          <div id="oracle-hint-box" class="oracle-hint-box hidden">
+            <span class="hint-icon">🔮</span>
+            <div>
+              <h5 class="hint-title">Petunjuk Kunci dari Guru:</h5>
+              <p id="oracle-hint-text" class="hint-text"></p>
+            </div>
+          </div>
+
+          <!-- Options Grid (A, B, C, D) -->
+          <div id="options-grid" class="options-grid">
+            <!-- Buttons dynamically created in JS -->
+          </div>
+
+          <!-- Answer Feedback Box -->
+          <div id="answer-feedback-box" class="feedback-box hidden">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Buff Inventory Bar (Interactive Power-Up Deck) -->
+        <div class="game-buff-deck-bar">
+          <div class="deck-bar-head">
+            <span class="deck-title">⚡ Kantong Buff & Kekuatan Kamu:</span>
+            <span class="deck-sub">Klik buff untuk mengaktifkannya pada soal ini!</span>
+          </div>
+          <div id="buff-inventory-cards" class="buff-inventory-cards">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Live Simulated Classmates Standing -->
+        <div class="live-classmates-box glass-panel">
+          <h4 class="live-box-title">📊 Klasemen Langsung di Kelas:</h4>
+          <ul id="live-classmates-list" class="classmates-list">
+            <!-- Dynamic standings -->
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         VIEW 3: VICTORY & RECAP SCREEN
+         ========================================== -->
+    <section id="victory-screen" class="view-section hidden">
+      <div class="victory-screen-wrapper glass-panel">
+        <div class="victory-trophy">🏆</div>
+        <span id="vic-rank-badge" class="vic-rank-badge">🥇 Juara 1 Kelas!</span>
+        <h2 class="vic-hero-title">Permainan Selesai!</h2>
+        <p class="vic-sub">Luar biasa, <strong id="vic-student-name">Siswa</strong> telah menyelesaikan <span id="vic-quiz-title" class="gradient-text">Kuis Sains</span></p>
+
+        <!-- Stats Grid -->
+        <div class="vic-stats-grid">
+          <div class="vic-stat-card glass-panel">
+            <span class="vic-stat-label">Total Nilai Skor</span>
+            <div id="vic-score-val" class="vic-stat-val">0</div>
+          </div>
+          <div class="vic-stat-card glass-panel">
+            <span class="vic-stat-label">Akurasi Jawaban</span>
+            <div id="vic-accuracy-val" class="vic-stat-val">100%</div>
+          </div>
+          <div class="vic-stat-card glass-panel">
+            <span class="vic-stat-label">Max Streak Api</span>
+            <div id="vic-streak-val" class="vic-stat-val">5x 🔥</div>
+          </div>
+          <div class="vic-stat-card glass-panel">
+            <span class="vic-stat-label">Waktu Pengerjaan</span>
+            <div id="vic-time-val" class="vic-stat-val">45 detik</div>
+          </div>
+        </div>
+
+        <div class="vic-avatar-container">
+          <div id="vic-avatar-spot" style="display:inline-flex; justify-content:center; margin: 0.5rem 0;"></div>
+        </div>
+
+        <!-- Points & EXP Reward Banner -->
+        <div id="vic-points-reward" style="margin-bottom: 1.5rem;"></div>
+
+        <!-- Buffs used recap -->
+        <div class="vic-buffs-recap glass-panel">
+          <h4 class="vic-buffs-title">⚡ Buff yang Telah Kamu Kerahkan:</h4>
+          <div id="vic-buffs-used"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="vic-actions-row">
+          <button id="btn-vic-play-again" class="btn-primary-action" style="max-width: 230px;">
+            🔄 Main Kuis Lain
+          </button>
+          <button id="btn-vic-shop" class="btn-secondary btn-glow-gold" style="padding: 1rem 1.4rem; font-size: 1.05rem;">
+            🛍️ Toko Avatar & Pakaian
+          </button>
+          <button id="btn-vic-leaderboard" class="btn-secondary" style="padding: 1rem 1.4rem; font-size: 1.05rem;">
+            🏆 Papan Skor
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         VIEW 4: LEADERBOARD & REKAP NILAI TERTINGGI
+         ========================================== -->
+    <section id="leaderboard-view" class="view-section hidden">
+      <div class="lb-header-row">
+        <div class="lb-title-wrap">
+          <h2>🏆 Papan Nilai & Rekap Nilai Tertinggi</h2>
+          <p class="text-muted">Pantau siapa peraih skor tertinggi di kelas untuk setiap kuis yang dikerjakan.</p>
+        </div>
+
+        <div class="lb-controls">
+          <select id="lb-quiz-filter" class="input-styled" style="width: auto; min-width: 240px;">
+            <option value="ALL">🌟 Semua Kuis (Peringkat Keseluruhan)</option>
+          </select>
+          <button id="btn-export-grades-csv" class="btn-secondary" title="Unduh rekap nilai siswa ke format Excel / CSV">
+            📥 Download Rekap Nilai (CSV)
+          </button>
+          <button id="btn-clear-leaderboard" class="btn-secondary" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
+            🗑️ Reset Nilai
+          </button>
+        </div>
+      </div>
+
+      <!-- Top 3 Podium Cards -->
+      <div id="lb-podium-cards" class="lb-podium-cards">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Full Table -->
+      <div class="lb-table-wrapper glass-panel">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>Peringkat</th>
+              <th>Nama Siswa</th>
+              <th>Kuis</th>
+              <th>Total Skor</th>
+              <th>Akurasi</th>
+              <th>Max Streak</th>
+              <th>Buff Digunakan</th>
+              <th>Waktu Bermain</th>
+            </tr>
+          </thead>
+          <tbody id="lb-table-body">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         VIEW 5: TEACHER / ADMIN STUDIO
+         ========================================== -->
+    <section id="admin-view" class="view-section hidden">
+      <div class="admin-header-row">
+        <div class="admin-title-area">
+          <h2>👨‍🏫 Studio Guru & Admin Kuis</h2>
+          <p>Buat kuis kustom untuk kelasmu, isi soal pilihan ganda, atur waktu, petunjuk guru (hint), dan kunci jawaban.</p>
+        </div>
+
+        <div class="admin-top-actions">
+          <button id="btn-new-quiz" class="btn-primary-action" style="padding: 0.65rem 1.25rem; font-size: 0.95rem;">
+            + Buat Kuis Baru
+          </button>
+          <button id="btn-export-quizzes" class="btn-secondary">
+            📤 Backup Kuis (JSON)
+          </button>
+          <label class="btn-secondary" style="cursor: pointer; display: flex; align-items: center;">
+            📥 Impor Kuis (JSON)
+            <input type="file" id="file-import-quizzes" accept=".json" style="display: none;">
+          </label>
+          <button id="btn-reset-defaults" class="btn-secondary" title="Kembalikan kuis bawaan sains & matematika">
+            🔄 Reset Kuis Bawaan
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid Kumpulan Kuis -->
+      <div id="admin-quiz-cards" class="admin-quiz-cards-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         VIEW 6: BUFF DEPOT & ENCYCLOPEDIA
+         ========================================== -->
+    <section id="buff-depot-view" class="view-section hidden">
+      <div class="lobby-hero">
+        <span class="hero-pill">⚡ Ensiklopedia Kekuatan</span>
+        <h2 class="hero-title">Katalog 8 Kekuatan <span class="gradient-text">Buff ClassQuest</span></h2>
+        <p class="hero-subtitle">Kekuatan super ini dirancang khusus untuk memicu adrenalin belajar, memberi perlindungan saat ragu, dan melipatgandakan skor siswa cerdas.</p>
+      </div>
+
+      <div id="buff-depot-grid" class="buff-depot-grid">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+
+    <!-- ==========================================
+         VIEW 7: AVATAR STUDIO & WARDROBE SHOP
+         ========================================== -->
+    <section id="avatar-shop-view" class="view-section hidden">
+      <div class="lobby-hero">
+        <span class="hero-pill">🛍️ Studio Kustomisasi & Toko Aksesoris</span>
+        <h2 class="hero-title">Ekspresikan Gayamu dengan <span class="gradient-text">Pakaian & Aksesoris</span> Keren!</h2>
+        <p class="hero-subtitle">Gunakan Poin & EXP yang kamu peroleh saat menjawab soal kuis untuk membeli topi, jubah sihir, helm cyber, kacamata, dan aura mistis.</p>
+      </div>
+
+      <div class="avatar-shop-layout">
+        <!-- Live Avatar Showcase Card -->
+        <div class="avatar-showcase-panel glass-panel">
+          <div class="showcase-header">
+            <h3>👤 Tampilan Avatar Kamu</h3>
+            <div class="user-balance-pill">
+              <span>Saldo:</span> <strong class="user-points-val">750</strong> 💎 Pts
+            </div>
+          </div>
+
+          <div id="shop-avatar-large-preview" class="shop-avatar-stage">
+            <!-- Dynamic Layered Avatar -->
+          </div>
+
+          <div class="showcase-tip">
+            <span class="tip-icon">💡</span>
+            <p>Pakaian & aksesoris yang kamu kenakan di sini akan langsung tampil di <strong>Lobby Arena</strong>, <strong>Klasemen Kelas</strong>, dan <strong>Podium Juara</strong>!</p>
+          </div>
+        </div>
+
+        <!-- Shop Catalog Panel -->
+        <div class="shop-catalog-panel glass-panel">
+          <!-- Category Tabs -->
+          <div class="shop-category-tabs">
+            <button class="shop-cat-btn cat-active" data-category="head">
+              <span>🧢</span> Topi & Mahkota
+            </button>
+            <button class="shop-cat-btn" data-category="outfit">
+              <span>👕</span> Pakaian & Armor
+            </button>
+            <button class="shop-cat-btn" data-category="face">
+              <span>🕶️</span> Aksesoris Wajah
+            </button>
+            <button class="shop-cat-btn" data-category="aura">
+              <span>✨</span> Aura & Sayap
+            </button>
+            <button class="shop-cat-btn" data-category="base">
+              <span>👤</span> Karakter Dasar
+            </button>
+          </div>
+
+          <!-- Items Grid -->
+          <div id="shop-items-grid" class="shop-items-grid">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VIEW 8: MULTIPLAYER LIVE ONLINE ROOM
+         ========================================== -->
+    <section id="multiplayer-view" class="view-section hidden">
+      <!-- Sub-view 1: Setup / Hub Section -->
+      <div id="mp-setup-section">
+        <div class="lobby-hero">
+          <span class="hero-pill">🌐 Mode Kelas Online Real-Time</span>
+          <h2 class="hero-title">Main Bareng Satu Kelas ala <span class="gradient-text">Quizizz Live</span>!</h2>
+          <p class="hero-subtitle">Buka room kelas di laptop guru/proyektor, siswa join dengan Game PIN dari HP/laptop masing-masing. Soal dan opsi jawaban otomatis diacak berbeda antar orang!</p>
+        </div>
+
+        <div class="mp-hub-grid">
+          <!-- Card Siswa: Join Room -->
+          <div class="mp-card glass-panel">
+            <div class="mp-card-badge">📱 Untuk Siswa</div>
+            <h3 class="mp-card-title">Masuk Room Kelas</h3>
+            <p class="mp-card-desc">Masukkan 6-digit Game PIN yang tertera di proyektor kelas atau dibagikan oleh gurumu.</p>
+
+            <div class="form-group">
+              <label for="mp-input-pin">Game PIN Room (6 Digit):</label>
+              <input type="text" id="mp-input-pin" class="input-styled input-big-pin" placeholder="Contoh: 819204" maxlength="6" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+              <label for="mp-input-name">Nama Siswa / Tim:</label>
+              <input type="text" id="mp-input-name" class="input-styled" placeholder="Nama lengkap atau panggilan..." maxlength="24">
+            </div>
+
+            <div class="mp-avatar-selected-preview">
+              <span class="preview-label">Avatar yang kamu pakai:</span>
+              <div id="mp-student-avatar-badge"></div>
+            </div>
+
+            <button id="btn-mp-join-room" class="btn-primary-action">
+              <span>🚀</span> Masuk ke Game Room
+            </button>
+          </div>
+
+          <!-- Card Guru: Host Room -->
+          <div class="mp-card glass-panel">
+            <div class="mp-card-badge badge-host">💻 Untuk Guru / Host</div>
+            <h3 class="mp-card-title">Buka Room Kelas Baru</h3>
+            <p class="mp-card-desc">Jadikan layarmu sebagai proyektor leaderboard live dan kendalikan permainan.</p>
+
+            <div class="form-group">
+              <label for="mp-select-quiz">Pilih Kuis yang Dimainkan:</label>
+              <select id="mp-select-quiz" class="input-styled"></select>
+            </div>
+
+            <div class="mp-rules-box">
+              <h5 class="rules-title">🛡️ Pengaturan Anti-Contek & Keseruan:</h5>
+              
+              <label class="toggle-control-row">
+                <input type="checkbox" id="mp-toggle-shuffle-q" checked>
+                <div class="toggle-info">
+                  <strong>🔀 Acak Urutan Soal (Shuffle Questions)</strong>
+                  <span>Setiap siswa menerima urutan soal yang berbeda-beda agar tidak bisa saling mencontek layar!</span>
+                </div>
+              </label>
+
+              <label class="toggle-control-row">
+                <input type="checkbox" id="mp-toggle-shuffle-opt" checked>
+                <div class="toggle-info">
+                  <strong>🎲 Acak Pilihan Opsi (Shuffle Answers)</strong>
+                  <span>Urutan pilihan A, B, C, D diacak berbeda untuk setiap orang pada soal yang sama.</span>
+                </div>
+              </label>
+
+              <div class="form-group" style="margin-top: 0.8rem; margin-bottom: 0;">
+                <label for="mp-input-timer">⏱️ Batas Waktu per Soal:</label>
+                <select id="mp-input-timer" class="input-styled">
+                  <option value="15">15 Detik (Kilat)</option>
+                  <option value="20" selected>20 Detik (Standar)</option>
+                  <option value="30">30 Detik (Santai)</option>
+                  <option value="45">45 Detik (Analisis)</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="btn-mp-create-room" class="btn-primary-action btn-gold">
+              <span>👑</span> Buka Room & Tampilkan PIN
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-view 2: Host Waiting Lobby Screen (Layar Proyektor Guru) -->
+      <div id="mp-host-lobby" class="hidden">
+        <div class="host-lobby-screen glass-panel">
+          <div class="host-screen-top">
+            <div>
+              <span class="hero-pill">💻 Layar Proyektor Kelas</span>
+              <h2 id="host-quiz-title" class="host-quiz-name">Kuis Sains Antariksa</h2>
+            </div>
+            <div id="host-settings-tags" class="settings-tags-row"></div>
+          </div>
+
+          <div class="big-pin-billboard">
+            <span class="billboard-sub">Buka di HP/Laptop siswa lalu masukkan Game PIN:</span>
+            <div id="host-pin-display" class="big-pin-digits">------</div>
+            <div class="host-join-url-hint">
+              <span>Alamat Join di Browser Siswa:</span>
+              <code id="host-ip-hint">http://&lt;IP-GURU&gt;:5173</code>
+            </div>
+          </div>
+
+          <div class="participants-section">
+            <div class="p-header">
+              <h4>👥 Siswa yang Sudah Bergabung: (<span id="host-joined-count">0</span>)</h4>
+              <button id="btn-host-start-game" class="btn-primary-action btn-pulse" style="width: auto; padding: 0.8rem 2rem;">
+                🚀 Mulai Game Sekarang!
+              </button>
+            </div>
+            <div id="host-participants-grid" class="participants-grid">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-view 3: Player Waiting Screen (Layar Siswa Menunggu Host Mulai) -->
+      <div id="mp-player-waiting" class="hidden">
+        <div class="player-waiting-card glass-panel">
+          <div class="waiting-spinner">⏳</div>
+          <h2>Kamu Sudah Masuk Room!</h2>
+          <p class="text-muted">Game PIN: <strong id="player-waiting-pin" class="text-gold">------</strong> • Kuis: <strong id="player-waiting-quiz">-</strong></p>
+          
+          <div id="player-waiting-avatar" class="waiting-avatar-stage"></div>
+
+          <div class="waiting-status-banner">
+            <p>Menunggu guru menekan tombol <strong>Mulai Game</strong> di layar proyektor kelas...</p>
+            <span id="player-waiting-count" class="waiting-badge">1 Teman Bergabung</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-view 4: Host Live Match Screen (Layar Proyektor saat Siswa Menjawab) -->
+      <div id="mp-host-live" class="hidden">
+        <div class="host-live-screen glass-panel">
+          <div class="host-live-header">
+            <div>
+              <span class="live-indicator">🔴 PERTANDINGAN KELAS LANGSUNG</span>
+              <h2 class="host-live-title">Papan Skor Kelas Real-Time</h2>
+            </div>
+            <div class="host-live-stats">
+              <span class="live-meta-pill">PIN: <strong id="host-live-pin">------</strong></span>
+              <span class="live-meta-pill"><strong id="host-live-qtotal">5 Soal</strong></span>
+              <span class="live-meta-pill"><strong id="host-live-pcount">0 Siswa</strong></span>
+              <button id="btn-host-end-manually" class="btn-secondary" style="border-color: #ef4444; color: #f87171;">
+                🏁 Selesaikan
+              </button>
+            </div>
+          </div>
+
+          <div class="host-leaderboard-table-wrap">
+            <table class="lb-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Nama Siswa & Avatar</th>
+                  <th>Skor</th>
+                  <th>Streak</th>
+                  <th>Akurasi</th>
+                  <th>Progress</th>
+                </tr>
+              </thead>
+              <tbody id="host-live-leaderboard-body">
+                <!-- Real-time sync -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-view 5: Student Live Match Screen (Layar HP Siswa saat Mengerjakan Soal Acak) -->
+      <div id="mp-student-game" class="hidden">
+        <div class="game-screen-wrapper">
+          <div class="timer-container">
+            <div class="timer-track">
+              <div id="mp-timer-bar-fill" class="timer-bar-fill"></div>
+            </div>
+            <div class="timer-info-row">
+              <span id="mp-timer-text">20s</span>
+              <span id="mp-q-counter">Soal 1 / 5</span>
+            </div>
+          </div>
+
+          <div class="question-card glass-panel">
+            <h3 id="mp-q-text" class="q-main-text">Memuat pertanyaan...</h3>
+
+            <div id="mp-options-grid" class="options-grid"></div>
+
+            <div id="mp-answer-feedback" class="feedback-box hidden"></div>
+          </div>
+
+          <!-- Student Buff Bar -->
+          <div class="game-buff-deck-bar">
+            <div class="deck-bar-head">
+              <span class="deck-title">⚡ Kantong Buff:</span>
+              <span class="deck-sub">Gunakan kekuatan untuk membantumu!</span>
+            </div>
+            <div id="mp-buff-inventory-cards" class="buff-inventory-cards"></div>
+          </div>
+
+          <!-- Mini Standings -->
+          <div class="live-classmates-box glass-panel">
+            <h4 class="live-box-title">📊 Klasemen Sementara Kelas:</h4>
+            <ul id="mp-live-classmates-list" class="classmates-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-view 6: Student Finished Notice -->
+      <div id="mp-student-finished-notice" class="hidden">
+        <div class="player-waiting-card glass-panel">
+          <div class="waiting-spinner">🎉</div>
+          <h2>Hebat! Kamu Telah Selesai Menjawab!</h2>
+          <p class="text-muted">Skormu telah dikirim ke proyektor guru. Tunggu seluruh teman kelas selesai untuk melihat pengumuman juara di podium!</p>
+        </div>
+      </div>
+
+      <!-- Sub-view 7: Final Podium View -->
+      <div id="mp-final-podium-view" class="hidden">
+        <div class="victory-screen-wrapper glass-panel">
+          <div class="victory-trophy">🏆</div>
+          <h2 class="vic-hero-title">Permainan Kelas Selesai!</h2>
+          <p class="vic-sub">Selamat kepada seluruh peserta kelas yang telah berjuang luar biasa!</p>
+          <button class="btn-primary-action" onclick="window.location.reload()" style="max-width: 250px; margin: 1.5rem auto 0;">
+            Kembali ke Beranda
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ==========================================
+       MODALS & OVERLAYS
+       ========================================== -->
+
+  <!-- Countdown Overlay -->
+  <div id="countdown-overlay" class="countdown-overlay hidden">
+    <div class="countdown-content">
+      <span id="countdown-number" class="countdown-number pulse-anim">3</span>
+      <div class="countdown-label">Bersiap Masuk Arena Kuis...</div>
+    </div>
+  </div>
+
+  <!-- Modal: Quiz Info Editor (Create/Edit Quiz) -->
+  <div id="modal-quiz-editor" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-quiz-title-text">Buat Kuis Baru</h3>
+        <button class="btn-close-modal" onclick="window.adminController.closeQuizModal()">&times;</button>
+      </div>
+      <form id="form-quiz-details">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="input-quiz-title">Judul Kuis:</label>
+            <input type="text" id="input-quiz-title" class="input-styled" placeholder="Contoh: Kuis Biologi Sel Hewan & Tumbuhan" required>
+          </div>
+          <div class="form-group">
+            <label for="input-quiz-desc">Deskripsi Singkat:</label>
+            <textarea id="input-quiz-desc" class="input-styled" rows="2" placeholder="Jelaskan topik yang diujikan untuk memotivasi siswa..."></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="input-quiz-category">Kategori:</label>
+              <input type="text" id="input-quiz-category" class="input-styled" placeholder="Sains / Bahasa / Umum" value="Umum">
+            </div>
+            <div class="form-group">
+              <label for="input-quiz-icon">Ikon Emoji:</label>
+              <input type="text" id="input-quiz-icon" class="input-styled" placeholder="🚀, 🔬, 📐, 📖" value="🚀">
+            </div>
+            <div class="form-group">
+              <label for="input-quiz-timer">Waktu/Soal (Detik):</label>
+              <input type="number" id="input-quiz-timer" class="input-styled" min="5" max="120" value="20" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="window.adminController.closeQuizModal()">Batal</button>
+          <button type="submit" class="btn-primary-action" style="width: auto;">Simpan Informasi Kuis</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Manage Questions for a Quiz -->
+  <div id="modal-question-manager" class="modal-overlay hidden">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3 id="qm-quiz-title">Daftar Soal Kuis</h3>
+          <p class="text-muted" style="font-size: 0.85rem;">Kelola seluruh pertanyaan, opsi jawaban, petunjuk guru, dan pembahasan.</p>
+        </div>
+        <button class="btn-close-modal" onclick="window.adminController.closeQuestionManager()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+          <button class="btn-primary-action" style="width: auto; padding: 0.6rem 1.2rem; font-size: 0.9rem;" onclick="window.adminController.openQuestionEditor(null)">
+            + Tambah Soal Baru
+          </button>
+        </div>
+
+        <div id="qm-questions-list">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="window.adminController.closeQuestionManager()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Question Builder Form (Add/Edit Single Question) -->
+  <div id="modal-question-editor" class="modal-overlay hidden">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 id="qe-modal-title">Form Soal Pilihan Ganda</h3>
+        <button class="btn-close-modal" onclick="window.adminController.closeQuestionEditor()">&times;</button>
+      </div>
+      <form id="form-question-builder">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="input-q-text">Teks Pertanyaan Soal:</label>
+            <textarea id="input-q-text" class="input-styled" rows="3" placeholder="Tuliskan pertanyaan di sini..." required></textarea>
+          </div>
+
+          <label style="font-weight: 700; margin-bottom: 0.5rem; display: block;">Pilihan Jawaban & Tandai Kunci Jawaban Benar (Radio):</label>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <input type="radio" name="correct_opt" value="A" id="radio-opt-a" required checked>
+              <label for="radio-opt-a" style="font-weight: 800; color: var(--opt-a); min-width: 25px;">A</label>
+              <input type="text" id="input-opt-a" class="input-styled" placeholder="Pilihan jawaban A" required>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <input type="radio" name="correct_opt" value="B" id="radio-opt-b" required>
+              <label for="radio-opt-b" style="font-weight: 800; color: var(--opt-b); min-width: 25px;">B</label>
+              <input type="text" id="input-opt-b" class="input-styled" placeholder="Pilihan jawaban B" required>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <input type="radio" name="correct_opt" value="C" id="radio-opt-c" required>
+              <label for="radio-opt-c" style="font-weight: 800; color: var(--opt-c); min-width: 25px;">C</label>
+              <input type="text" id="input-opt-c" class="input-styled" placeholder="Pilihan jawaban C" required>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <input type="radio" name="correct_opt" value="D" id="radio-opt-d" required>
+              <label for="radio-opt-d" style="font-weight: 800; color: var(--opt-d); min-width: 25px;">D</label>
+              <input type="text" id="input-opt-d" class="input-styled" placeholder="Pilihan jawaban D" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="input-q-hint">🔮 Petunjuk Kunci Guru (Hint):</label>
+              <input type="text" id="input-q-hint" class="input-styled" placeholder="Muncul jika siswa menggunakan buff Oracle Lens">
+            </div>
+            <div class="form-group">
+              <label for="input-q-points">💎 Poin Dasar Soal:</label>
+              <input type="number" id="input-q-points" class="input-styled" value="1000" min="100" max="5000">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-q-explanation">💡 Pembahasan / Penjelasan Jawaban:</label>
+            <textarea id="input-q-explanation" class="input-styled" rows="2" placeholder="Penjelasan ilmiah/konsep yang akan muncul setelah siswa menjawab agar mereka belajar langsung..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="window.adminController.closeQuestionEditor()">Batal</button>
+          <button type="submit" class="btn-primary-action" style="width: auto;">Simpan Soal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Buff Roulette Loot Drop -->
+  <div id="buff-roulette-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="text-align: center;">
+      <div class="modal-header" style="justify-content: center;">
+        <h3>🎁 Mystery Buff Drop Roulette!</h3>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Kamu mencetak Combo Streak! Pilih 1 dari 3 kotak misterius di bawah untuk mengambil kekuatan buff gratis:</p>
+        <div id="roulette-cards-container" class="roulette-cards-container">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Popup -->
+  <div id="game-toast" class="toast-popup">Notifikasi</div>
+
+  <!-- Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/buffs.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script src="js/multiplayer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

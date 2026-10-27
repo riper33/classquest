@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables & local files
+.env
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE & Editor files
+.vscode/
+.idea/
